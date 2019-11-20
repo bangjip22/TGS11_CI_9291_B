@@ -4,13 +4,19 @@ Class User extends REST_Controller{
  public function __construct(){
  header('Access-Control-Allow-Origin: *');
  header("Access-Control-Allow-Methods: GET, OPTIONS, POST, DELETE");
- header("Access-Control-Allow-Headers: Content-Type, Content-Length, Accept-Encoding");
+ header("Access-Control-Allow-Headers: Authorization, Content-Type, ContentLength, Accept-Encoding");
  parent::__construct();
  $this->load->model('UserModel');
  $this->load->library('form_validation');
+ $this->load->helper(['jwt', 'authorization']);
  }
  public function index_get(){
- return $this->returnData($this->db->get('users')->result(), false);
+    $data = $this->verify_request();
+    $status = parent::HTTP_OK;
+    if ($data['status'] == 401) {
+        return $this->returnData($data['msg'], true);
+    }
+    return $this->returnData($this->db->get('users')->result(), false);
  }
  public function index_post($id = null){
  $validation = $this->form_validation;
