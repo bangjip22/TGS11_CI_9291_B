@@ -11,12 +11,12 @@ Class User extends REST_Controller{
  $this->load->helper(['jwt', 'authorization']);
  }
  public function index_get(){
-    $data = $this->verify_request();
-    $status = parent::HTTP_OK;
-    if ($data['status'] == 401) {
-        return $this->returnData($data['msg'], true);
-    }
-    return $this->returnData($this->db->get('users')->result(), false);
+$data = $this->verify_request();
+$status = parent::HTTP_OK;
+if ($data['status'] == 401) {
+return $this->returnData($data['msg'], true);
+}
+return $this->returnData($this->db->get('users')->result(), false);
  }
  public function index_post($id = null){
  $validation = $this->form_validation;
@@ -69,8 +69,34 @@ Class User extends REST_Controller{
  $response['error']=$error;
  $response['message']=$msg;
  return $this->response($response);
+ }private function verify_request()
+ {
+     $headers = $this->input->request_headers();
+     if (isset($headers['Authorization'])) {
+         $header = $headers['Authorization'];
+     } else {
+         $status = parent::HTTP_UNAUTHORIZED;
+         $response = ['status' => $status, 'msg' => 'Unauthorized Access!'];
+         return $response;
+     }
+     $token = explode(" ", $header)[1];
+     try {
+         $data = AUTHORIZATION::validateToken($token);
+         if ($data === false) {
+             $status = parent::HTTP_UNAUTHORIZED;
+             $response = ['status' => $status, 'msg' => 'Unauthorized Access!'];
+         } else {
+             $response = ['status' => 200, 'msg' => $data];
+         }
+         return $response;
+     } catch (Exception $e) {
+         $status = parent::HTTP_UNAUTHORIZED;
+         $response = ['status' => $status, 'msg' => 'Unauthorized Access! '];
+         return $response;
+     }
  }
 }
+
 Class UserData{
  public $name;
  public $password;

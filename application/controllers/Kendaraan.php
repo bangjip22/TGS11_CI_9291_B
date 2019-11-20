@@ -8,9 +8,14 @@ Class Kendaraan extends REST_Controller{
  parent::__construct();
  $this->load->model('KendaraanModel');
  $this->load->library('form_validation');
+ $this->load->helper(['jwt', 'authorization']);
  }
  public function index_get(){
- return $this->returnData($this->db->get('vehicles')->result(), false);
+   $data = $this->verify_request();
+   $status = parent::HTTP_OK;
+   $response = ['status' => $status, 'data' => $data];
+   $this->response($response, $status);
+   return $this->returnData($this->db->get('vehicles')->result(), false);
  }
  public function index_post($id = null){
  $validation = $this->form_validation;
